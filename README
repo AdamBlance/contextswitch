@@ -17,3 +17,11 @@ timetctxsw2: Benchmarks the overhead of context switching between 2 threads,
              ready thread will be scheduled.
              I also added sched_setscheduler(SCHED_FIFO) to get the best
              performances.
+             
+             
+In this benchmark, when you run cpubench.sh, you need give a parameters, and it will generate 4 files under $1/
+
+In our new benchmark, we don’t generate the avg, instead we will get the cpu ticks for each loop. The data will be for post processing.
+
+To write your own script, please refer to the bare_metal_4_13.sh as a example.
+
