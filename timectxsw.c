@@ -24,23 +24,31 @@
 #include <unistd.h>
 
 #include <linux/futex.h>
+#include <string.h>
+#include <sys/mman.h>
+static inline unsigned long rdtsc(void)
+{
+        unsigned long low, high;
 
-static inline long long unsigned time_ns(struct timespec* const ts) {
-  if (clock_gettime(CLOCK_REALTIME, ts)) {
-    exit(1);
-  }
-  return ((long long unsigned) ts->tv_sec) * 1000000000LLU
-    + (long long unsigned) ts->tv_nsec;
+        asm volatile("rdtsc" : "=a" (low), "=d" (high));
+
+        return ((low) | (high) << 32);
 }
 
 int main(void) {
   const int iterations = 500000;
-  struct timespec ts;
+  unsigned long long *results = malloc(sizeof(unsigned long long)*iterations);
+  memset(results,0,sizeof(long long unsigned)*iterations);
+  int ret= mlock(results,sizeof(long long unsigned)*iterations);
+  printf("code %d\n",ret);
+  double total=0.0;
+  unsigned long long start, stop;
   const int shm_id = shmget(IPC_PRIVATE, sizeof (int), IPC_CREAT | 0666);
   const pid_t other = fork();
   int* futex = shmat(shm_id, NULL, 0);
   *futex = 0xA;
   if (other == 0) {
+    start = rdtsc();
     for (int i = 0; i < iterations; i++) {
       sched_yield();
       while (syscall(SYS_futex, futex, FUTEX_WAIT, 0xA, NULL, NULL, 42)) {
@@ -52,11 +60,13 @@ int main(void) {
         // retry
         sched_yield();
       }
+      stop = rdtsc();
+      results[i]= stop-start;
+      start = stop;
     }
     return 0;
   }
-
-  const long long unsigned start_ns = time_ns(&ts);
+  start = rdtsc();
   for (int i = 0; i < iterations; i++) {
     *futex = 0xA;
     while (!syscall(SYS_futex, futex, FUTEX_WAKE, 1, NULL, NULL, 42)) {
@@ -68,12 +78,17 @@ int main(void) {
       // retry
       sched_yield();
     }
+    stop = rdtsc();
+    results[i]= stop-start;
+    start = stop;
   }
-  const long long unsigned delta = time_ns(&ts) - start_ns;
-
+  for (int i = 0; i < iterations; i++) {
+	  printf("%lld\n",results[i]);
+          //total+=results[i];
+  }
   const int nswitches = iterations << 2;
-  printf("%i process context switches in %lluns (%.1fns/ctxsw)\n",
-         nswitches, delta, (delta / (float) nswitches));
+//  printf("%i process context switches in %lfns (%.1fns/ctxsw)\n",
+//         nswitches, total/2.1, ((total/2.1) / (float) nswitches));
   wait(futex);
   return 0;
 }

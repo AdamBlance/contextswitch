@@ -22,6 +22,17 @@
 #include <string.h>
 #include <errno.h>
 
+#include <string.h>
+#include <sys/mman.h>
+static inline unsigned long rdtsc(void)
+{
+        unsigned long low, high;
+
+        asm volatile("rdtsc" : "=a" (low), "=d" (high));
+
+        return ((low) | (high) << 32);
+}
+
 static inline long long unsigned time_ns(struct timespec* const ts) {
   if (clock_gettime(CLOCK_REALTIME, ts)) {
     exit(1);
@@ -32,6 +43,7 @@ static inline long long unsigned time_ns(struct timespec* const ts) {
 
 static const int iterations = 500000;
 
+
 static void* thread(void*ctx) {
   (void)ctx;
   for (int i = 0; i < iterations; i++)
@@ -40,6 +52,12 @@ static void* thread(void*ctx) {
 }
 
 int main(void) {
+  unsigned long long *results = malloc(sizeof(unsigned long long)*iterations);
+  memset(results,0,sizeof(long long unsigned)*iterations);
+  int ret= mlock(results,sizeof(long long unsigned)*iterations);
+  printf("code %d\n",ret);
+  double total=0.0;
+  unsigned long long start, stop;
   struct sched_param param;
   param.sched_priority = 1;
   if (sched_setscheduler(getpid(), SCHED_FIFO, &param))
@@ -50,14 +68,25 @@ int main(void) {
   if (pthread_create(&thd, NULL, thread, NULL)) {
     return 1;
   }
-
+  
   long long unsigned start_ns = time_ns(&ts);
+  start = rdtsc();
   for (int i = 0; i < iterations; i++)
+  {
       sched_yield();
+      stop = rdtsc();
+      results[i]= stop-start;
+      start = stop;
+  }
   long long unsigned delta = time_ns(&ts) - start_ns;
-
+    for (int i = 0; i < iterations; i++) {
+	   printf("%lld\n",results[i]);
+          //total+=results[i];
+  }
   const int nswitches = iterations << 2;
-  printf("%i  thread context switches in %lluns (%.1fns/ctxsw)\n",
-         nswitches, delta, (delta / (float) nswitches));
+//  printf("%i  thread context switches in %lluns (%.1fns/ctxsw)\n",
+//         nswitches, delta, (delta / (float) nswitches));
+//  printf("%i  thread context switches in %lfns (%.1fns/ctxsw)\n",
+//         nswitches, total/2.1, ((total/2.1) / (float) nswitches));
   return 0;
 }
