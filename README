@@ -18,7 +18,8 @@ timetctxsw2: Benchmarks the overhead of context switching between 2 threads,
              I also added sched_setscheduler(SCHED_FIFO) to get the best
              performances.
              
-             
+Update: RDTSC to get the tick time of each loop.        
+    
 In this benchmark, when you run cpubench.sh, you need give a parameters, and it will generate 4 files under $1/
 
 In our new benchmark, we don’t generate the avg, instead we will get the cpu ticks for each loop. The data will be for post processing.
