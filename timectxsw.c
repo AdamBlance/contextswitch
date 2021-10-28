@@ -40,7 +40,6 @@ int main(void) {
   unsigned long long *results = malloc(sizeof(unsigned long long)*iterations);
   memset(results,0,sizeof(long long unsigned)*iterations);
   int ret= mlock(results,sizeof(long long unsigned)*iterations);
-  printf("code %d\n",ret);
   double total=0.0;
   unsigned long long start, stop;
   const int shm_id = shmget(IPC_PRIVATE, sizeof (int), IPC_CREAT | 0666);
