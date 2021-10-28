@@ -14,16 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CC = gcc
-CFLAGS = -pthread -march=native -O3 -mno-avx -D_XOPEN_SOURCE=600 -D_GNU_SOURCE -std=c99 \
-         -W -Wall -Werror
+CFLAGS = -pthread -march=native -O3 -mno-avx -D_XOPEN_SOURCE=600 -D_GNU_SOURCE  \
+	 -W -Wall 
 LDFLAGS = -lrt -lpthread
 
-TARGETS = timectxsw timectxswws timesyscall timetctxsw timetctxsw2
+TARGETS = timectxsw  timesyscall timetctxsw timetctxsw2
+all: $(TARGETS)
 
-all: bench
-
-bench: $(TARGETS)
-	./cpubench.sh
 
 clean:
 	rm -f $(TARGETS)
