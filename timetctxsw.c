@@ -63,7 +63,6 @@ int main(void) {
   memset(results,0,sizeof(long long unsigned)*iterations);
   int ret= mlock(results,sizeof(long long unsigned)*iterations); 
   unsigned long long start, stop;
-  printf("code %d\n",ret);
   double total=0.0;
   pthread_t thd;
   if (pthread_create(&thd, NULL, thread, futex)) {
