@@ -74,7 +74,8 @@ int main(void) {
   {
       sched_yield();
   }
-    const long long unsigned delta = time_ns(&ts) - start_ns;
-  printf("%.1f\n",(delta / (float) iterations));
+    stop = rdtsc();
+  stop = stop - start;
+  printf("%.1f\n",(stop / (float) iterations));
   return 0;
 }

@@ -37,13 +37,7 @@ static inline unsigned long rdtsc(void)
 }
 
 static const int iterations = 500000;
-static inline long long unsigned time_ns(struct timespec* const ts) {
-  if (clock_gettime(CLOCK_REALTIME, ts)) {
-    exit(1);
-  }
-  return ((long long unsigned) ts->tv_sec) * 1000000000LLU
-    + (long long unsigned) ts->tv_nsec;
-}
+
 static void* thread(void* restrict ftx) {
   int* futex = (int*) ftx;
   for (int i = 0; i < iterations; i++) {
@@ -76,7 +70,6 @@ int main(void) {
   }
   *futex = 0xA;
   start=rdtsc();
-  const long long unsigned start_ns = time_ns(&ts);
   for (int i = 0; i < iterations; i++) {
     *futex = 0xA;
     
@@ -90,8 +83,9 @@ int main(void) {
       sched_yield();
     }
   }
-    const long long unsigned delta = time_ns(&ts) - start_ns;
-  printf("%.1f\n",(delta / (float) iterations));
+    stop = rdtsc();
+  stop = stop - start;
+  printf("%.1f\n",(stop / (float) iterations));
   wait(futex);
   return 0;
 }

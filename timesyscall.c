@@ -56,8 +56,9 @@ int main(void) {
   //  results[i]= stop-start;
   //  start = stop;
   }
-  const long long unsigned delta = time_ns(&ts) - start_ns;
-  printf("%.1f\n",(delta / (float) iterations));
+  stop = rdtsc();
+  stop = stop - start;
+  printf("%.1f\n",(stop / (float) iterations));
 //  printf("%i system calls in %llu ticks (%.1fns/syscall)\n",
 //         iterations, stop, (stop / (float) iterations));
 //  printf("%i system calls in %lluns (%.1fns/syscall)\n",
