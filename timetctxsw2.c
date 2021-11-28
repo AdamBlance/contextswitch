@@ -73,19 +73,8 @@ int main(void) {
   for (int i = 0; i < iterations; i++)
   {
       sched_yield();
-      stop = rdtsc();
-      results[i]= stop-start;
-      start = stop;
   }
-  long long unsigned delta = time_ns(&ts) - start_ns;
-    for (int i = 0; i < iterations; i++) {
-	   printf("%lld\n",results[i]);
-          //total+=results[i];
-  }
-  const int nswitches = iterations << 2;
-//  printf("%i  thread context switches in %lluns (%.1fns/ctxsw)\n",
-//         nswitches, delta, (delta / (float) nswitches));
-//  printf("%i  thread context switches in %lfns (%.1fns/ctxsw)\n",
-//         nswitches, total/2.1, ((total/2.1) / (float) nswitches));
+    const long long unsigned delta = time_ns(&ts) - start_ns;
+  printf("%.1f\n",(delta / (float) iterations));
   return 0;
 }

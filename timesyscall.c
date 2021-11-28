@@ -52,15 +52,14 @@ int main(void) {
     if (syscall(SYS_gettid) <= 1) {
       exit(2);
     }
-    stop = rdtsc();
-    results[i]= stop-start;
-    start = stop;
+  //  stop = rdtsc();
+  //  results[i]= stop-start;
+  //  start = stop;
   }
-  
   const long long unsigned delta = time_ns(&ts) - start_ns;
-  for (int i = 0; i < iterations; i++) {
-          printf("%lld\n",results[i]);
-  }
+  printf("%.1f\n",(delta / (float) iterations));
+//  printf("%i system calls in %llu ticks (%.1fns/syscall)\n",
+//         iterations, stop, (stop / (float) iterations));
 //  printf("%i system calls in %lluns (%.1fns/syscall)\n",
 //         iterations, delta, (delta / (float) iterations));
 //  printf("%i  thread context switches in %lfns (%.1fns/ctxsw)\n",
