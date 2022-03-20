@@ -20,15 +20,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/mman.h>
-static inline unsigned long rdtsc(void)
-{
-        unsigned long low, high;
 
-        asm volatile("rdtsc" : "=a" (low), "=d" (high));
-
-        return ((low) | (high) << 32);
+static inline unsigned long rdtsc(void) {
+  unsigned long low, high;
+  asm volatile("rdtsc" : "=a" (low), "=d" (high));
+  return ((low) | (high) << 32);
 }
-
 
 static inline long long unsigned time_ns(struct timespec* const ts) {
   if (clock_gettime(CLOCK_REALTIME, ts)) {
@@ -38,32 +35,43 @@ static inline long long unsigned time_ns(struct timespec* const ts) {
     + (long long unsigned) ts->tv_nsec;
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+
   const int iterations = 10000000;
-  unsigned long long *results = malloc(sizeof(unsigned long long)*iterations);
-  memset(results,0,sizeof(long long unsigned)*iterations);
-  while(0!= mlock(results,sizeof(long long unsigned)*iterations)){}
-  double total=0.0;
-  unsigned long long start, stop;
+
+  // Array for results
+  unsigned long *results = malloc(sizeof(unsigned long) * iterations);
+  memset(results, 0, sizeof(unsigned long) * iterations);
+  while(0 != mlock(results, sizeof(unsigned long) * iterations));
+  
+  // For gettime
   struct timespec ts;
   const long long unsigned start_ns = time_ns(&ts);
+    
+  // For RDTSC
+  unsigned long long start, stop;
   start = rdtsc();
+  
+  // Benchmark
   for (int i = 0; i < iterations; i++) {
     if (syscall(SYS_gettid) <= 1) {
       exit(2);
     }
     stop = rdtsc();
-    results[i]= stop-start;
+    results[i] = (unsigned long)(stop - start);
     start = stop;
   }
   
-  const long long unsigned delta = time_ns(&ts) - start_ns;
-  for (int i = 0; i < iterations; i++) {
-          printf("%lld\n",results[i]);
+  const long unsigned delta = time_ns(&ts) - start_ns;
+
+  FILE* out; 
+  fopen_s(&out, argv[1], "w");
+  if (out == NULL) {
+    return 1;
   }
-//  printf("%i system calls in %lluns (%.1fns/syscall)\n",
-//         iterations, delta, (delta / (float) iterations));
-//  printf("%i  thread context switches in %lfns (%.1fns/ctxsw)\n",
-//         iterations, total/2.1, ((total/2.1) / (float) iterations));
+  fwrite(&delta, sizeof(unsigned long long), 1, out);
+  fwrite(results, sizeof(unsigned long), iterations, out);
+  fclose(out);
+
   return 0;
 }

@@ -26,26 +26,35 @@
 #include <linux/futex.h>
 #include <string.h>
 #include <sys/mman.h>
-static inline unsigned long rdtsc(void)
-{
-        unsigned long low, high;
 
-        asm volatile("rdtsc" : "=a" (low), "=d" (high));
-
-        return ((low) | (high) << 32);
+static inline unsigned long rdtsc(void) {
+  unsigned long low, high;
+  asm volatile("rdtsc" : "=a" (low), "=d" (high));
+  return ((low) | (high) << 32);
 }
 
-int main(void) {
+static inline long long unsigned time_ns(struct timespec* const ts) {
+  if (clock_gettime(CLOCK_REALTIME, ts)) {
+    exit(1);
+  }
+  return ((long long unsigned) ts->tv_sec) * 1000000000LLU
+    + (long long unsigned) ts->tv_nsec;
+}
+
+int main(int argc, char **argv) {
   const int iterations = 500000;
-  unsigned long long *results = malloc(sizeof(unsigned long long)*iterations);
-  memset(results,0,sizeof(long long unsigned)*iterations);
-  int ret= mlock(results,sizeof(long long unsigned)*iterations);
-  double total=0.0;
-  unsigned long long start, stop;
+
+  unsigned long *results = malloc(sizeof(unsigned long) * iterations);
+  memset(results, 0, sizeof(unsigned long) * iterations);
+  int ret = mlock(results, sizeof(unsigned long) * iterations);
+
   const int shm_id = shmget(IPC_PRIVATE, sizeof (int), IPC_CREAT | 0666);
   const pid_t other = fork();
   int* futex = shmat(shm_id, NULL, 0);
   *futex = 0xA;
+
+  unsigned long long start, stop;
+
   if (other == 0) {
     start = rdtsc();
     for (int i = 0; i < iterations; i++) {
@@ -60,11 +69,13 @@ int main(void) {
         sched_yield();
       }
       stop = rdtsc();
-      results[i]= stop-start;
+      results[i] = (unsigned long)(stop-start);
       start = stop;
     }
     return 0;
   }
+
+  const long long unsigned start_ns = time_ns(&ts);
   start = rdtsc();
   for (int i = 0; i < iterations; i++) {
     *futex = 0xA;
@@ -78,16 +89,20 @@ int main(void) {
       sched_yield();
     }
     stop = rdtsc();
-    results[i]= stop-start;
+    results[i] = (unsigned long)(stop-start);
     start = stop;
   }
-  for (int i = 0; i < iterations; i++) {
-	  printf("%lld\n",results[i]);
-          //total+=results[i];
+  const long long unsigned delta = time_ns(&ts) - start_ns;
+  
+  FILE* out; 
+  fopen_s(&out, argv[1], "w");
+  if (out == NULL) {
+    return 1;
   }
-  const int nswitches = iterations << 2;
-//  printf("%i process context switches in %lfns (%.1fns/ctxsw)\n",
-//         nswitches, total/2.1, ((total/2.1) / (float) nswitches));
+  fwrite(&delta, sizeof(unsigned long long), 1, out);
+  fwrite(results, sizeof(unsigned long), iterations, out);
+  fclose(out);
+
   wait(futex);
   return 0;
 }
