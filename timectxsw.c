@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     }
     return 0;
   }
-
+  struct timespec ts;
   const long long unsigned start_ns = time_ns(&ts);
   start = rdtsc();
   for (int i = 0; i < iterations; i++) {
@@ -93,9 +93,9 @@ int main(int argc, char **argv) {
     start = stop;
   }
   const long long unsigned delta = time_ns(&ts) - start_ns;
-  
-  FILE* out; 
-  fopen_s(&out, argv[1], "w");
+
+  FILE* out;
+  out = fopen(argv[1], "w");
   if (out == NULL) {
     return 1;
   }

@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
   const long unsigned delta = time_ns(&ts) - start_ns;
 
   FILE* out; 
-  fopen_s(&out, argv[1], "w");
+  out = fopen(argv[1], "w");
   if (out == NULL) {
     return 1;
   }
