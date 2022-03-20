@@ -94,14 +94,16 @@ int main(int argc, char **argv) {
   }
   const long long unsigned delta = time_ns(&ts) - start_ns;
 
-  FILE* out;
-  out = fopen(argv[1], "w");
-  if (out == NULL) {
-    return 1;
+  if (argc == 2) {
+    FILE* out; 
+    out = fopen(argv[1], "w");
+    if (out == NULL) {
+      return 1;
+    }
+    fwrite(&delta, sizeof(unsigned long long), 1, out);
+    fwrite(results, sizeof(unsigned long), iterations, out);
+    fclose(out);
   }
-  fwrite(&delta, sizeof(unsigned long long), 1, out);
-  fwrite(results, sizeof(unsigned long), iterations, out);
-  fclose(out);
 
   wait(futex);
   return 0;
