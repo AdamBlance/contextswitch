@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
   const int shm_id = shmget(IPC_PRIVATE, sizeof (int), IPC_CREAT | 0666);
   int* futex = shmat(shm_id, NULL, 0);
 
-  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  unsigned int *results = malloc(sizeof(unsigned int) * iterations);
   memset(results, 0, sizeof(unsigned int) * iterations);
   int ret = mlock(results, sizeof(unsigned int) * iterations); 
 

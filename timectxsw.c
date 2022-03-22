@@ -44,7 +44,7 @@ static inline long long unsigned time_ns(struct timespec* const ts) {
 int main(int argc, char **argv) {
   const int iterations = 500000;
 
-  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  unsigned int *results = malloc(sizeof(unsigned int) * iterations);
   memset(results, 0, sizeof(unsigned int) * iterations);
   int ret = mlock(results, sizeof(unsigned int) * iterations);
 

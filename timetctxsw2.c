@@ -49,7 +49,7 @@ static void* thread(void*ctx) {
 }
 
 int main(int argc, char **argv) {
-  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  unsigned int *results = malloc(sizeof(unsigned int) * iterations);
   memset(results, 0, sizeof(unsigned int) * iterations);
   int ret = mlock(results, sizeof(unsigned int) * iterations);
 

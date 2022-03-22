@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   const int iterations = 10000000;
 
   // Array for results
-  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  unsigned int *results = malloc(sizeof(unsigned int) * iterations);
   memset(results, 0, sizeof(unsigned int) * iterations);
   while(0 != mlock(results, sizeof(unsigned int) * iterations));
   
