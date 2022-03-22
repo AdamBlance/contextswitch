@@ -66,9 +66,9 @@ int main(int argc, char **argv) {
   const int shm_id = shmget(IPC_PRIVATE, sizeof (int), IPC_CREAT | 0666);
   int* futex = shmat(shm_id, NULL, 0);
 
-  unsigned long *results = malloc(sizeof(unsigned long) * iterations);
-  memset(results, 0, sizeof(unsigned long) * iterations);
-  int ret = mlock(results, sizeof(unsigned long) * iterations); 
+  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  memset(results, 0, sizeof(unsigned int) * iterations);
+  int ret = mlock(results, sizeof(unsigned int) * iterations); 
 
   pthread_t thd;
   if (pthread_create(&thd, NULL, thread, futex)) {
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
       sched_yield();
     }
     stop = rdtsc();
-    results[i] = (unsigned long)(stop-start);
+    results[i] = (unsigned int)(stop-start);
     start = stop;
   }
   const long long unsigned delta = time_ns(&ts) - start_ns;
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
       return 1;
     }
     fwrite(&delta, sizeof(unsigned long long), 1, out);
-    fwrite(results, sizeof(unsigned long), iterations, out);
+    fwrite(results, sizeof(unsigned int), iterations, out);
     fclose(out);
   }
 

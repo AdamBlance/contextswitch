@@ -49,9 +49,9 @@ static void* thread(void*ctx) {
 }
 
 int main(int argc, char **argv) {
-  unsigned long *results = malloc(sizeof(unsigned long) * iterations);
-  memset(results, 0, sizeof(unsigned long) * iterations);
-  int ret = mlock(results, sizeof(unsigned long) * iterations);
+  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  memset(results, 0, sizeof(unsigned int) * iterations);
+  int ret = mlock(results, sizeof(unsigned int) * iterations);
 
   unsigned long long start, stop;
   struct sched_param param;
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
   {
       sched_yield();
       stop = rdtsc();
-      results[i] = (unsigned long)(stop-start);
+      results[i] = (unsigned int)(stop-start);
       start = stop;
   }
   long long unsigned delta = time_ns(&ts) - start_ns;
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
       return 1;
     }
     fwrite(&delta, sizeof(unsigned long long), 1, out);
-    fwrite(results, sizeof(unsigned long), iterations, out);
+    fwrite(results, sizeof(unsigned int), iterations, out);
     fclose(out);
   }
   

@@ -40,9 +40,9 @@ int main(int argc, char **argv) {
   const int iterations = 10000000;
 
   // Array for results
-  unsigned long *results = malloc(sizeof(unsigned long) * iterations);
-  memset(results, 0, sizeof(unsigned long) * iterations);
-  while(0 != mlock(results, sizeof(unsigned long) * iterations));
+  unsigned long *results = malloc(sizeof(unsigned int) * iterations);
+  memset(results, 0, sizeof(unsigned int) * iterations);
+  while(0 != mlock(results, sizeof(unsigned int) * iterations));
   
   // For gettime
   struct timespec ts;
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
       exit(2);
     }
     stop = rdtsc();
-    results[i] = (unsigned long)(stop - start);
+    results[i] = (unsigned int)(stop - start);
     start = stop;
   }
   
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
       return 1;
     }
     fwrite(&delta, sizeof(unsigned long long), 1, out);
-    fwrite(results, sizeof(unsigned long), iterations, out);
+    fwrite(results, sizeof(unsigned int), iterations, out);
     fclose(out);
   }
 
